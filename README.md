@@ -1,25 +1,40 @@
 # Territory Automation
 
-Automatisation de la saisie et l'import de territoires dans **New World Scheduler 7.9**.
+🚀 **Automatisation complète** de la saisie et l'import de territoires dans **New World Scheduler 7.9**.
 
-## Fonctionnalités
+## 🎯 Fonctionnalités
 
-- Import automatique de territoires depuis un fichier Excel/CSV
-- Remplissage automatique des formulaires (numéro, suffixe, type, notes, etc.)
-- Import des fichiers PDF associés à chaque territoire
-- Gestion de la progression (reprise après interruption)
-- Logging détaillé des actions et erreurs
-- Mode "dry-run" pour simulation
-- Mode "no-save" pour valider les saisies avant enregistrement
+### Import et saisie automatisée
+- ✅ Import automatique de territoires depuis un fichier Excel/CSV
+- ✅ Remplissage automatique des formulaires (numéro, suffixe, type, notes, etc.)
+- ✅ Sélection automatique de la catégorie "SAR"
+- ✅ Support de multiples types de territoires (En présentiel, Courrier, Téléphone, Entreprise)
+- ✅ Saisie des villes (SARTROUVILLE, MAISONS-LAFFITTE, MONTESSON, etc.)
+- ✅ Import automatique des fichiers PDF associés
 
-## Installation
+### Gestion intelligente
+- 💾 Sauvegarde automatique de la progression (reprise après interruption)
+- 📊 Vérification des données et PDFs avant exécution
+- 📝 Logging détaillé des actions et erreurs
+- 🎭 Mode "dry-run" pour simulation (sans exécuter les actions)
+- 🔍 Mode "no-save" pour validation visuelle (remplit sans sauvegarder)
+- 🛑 Arrêt d'urgence (fail-safe)
 
-### Prérequis
+### Outils de calibration
+- 🎯 Assistant de calibration guidé (recommandé)
+- 🖱️ Outil de capture manuelle de coordonnées
+- ✅ Test de calibration avec modes survol et clic
+- 🔄 Recalibration facile si besoin
 
-- Python 3.10+
-- Windows 10/11
-- New World Scheduler 7.9 installé
-- [uv](https://docs.astral.sh/uv/) (gestionnaire de paquets Python)
+## 📋 Prérequis
+
+- **Python 3.10+** (testé avec Python 3.10, 3.11, 3.12)
+- **Windows 10/11** (obligatoire pour pywinauto)
+- **New World Scheduler 7.9** installé et configuré
+- **[uv](https://docs.astral.sh/uv/)** (gestionnaire de paquets Python recommandé)
+- **Résolution d'écran stable** (pour la calibration des coordonnées)
+
+## 🔧 Installation
 
 ### Installation avec uv
 
@@ -61,20 +76,26 @@ uv run python tools/test_connection.py
 ### Lancer l'automatisation
 
 ```bash
-# Mode normal
+# Mode normal (exécution complète)
 uv run python main.py
 
-# Mode simulation (sans exécuter)
+# Mode simulation (affiche les actions sans les exécuter)
 uv run python main.py --dry-run
 
 # Mode validation (remplit les champs sans sauvegarder)
 uv run python main.py --no-save
 
-# Réinitialiser la progression
+# Vérifier les données et PDFs avant exécution
+uv run python main.py --verify
+
+# Réinitialiser la progression (recommencer depuis le début)
 uv run python main.py --reset
 
-# Vérifier les données uniquement
-uv run python main.py --verify
+# Commencer à partir d'un index spécifique
+uv run python main.py --start-from 10
+
+# Utiliser un fichier de données personnalisé
+uv run python main.py --data-file data/custom.xlsx
 ```
 
 ### Mode validation (--no-save)
@@ -126,43 +147,84 @@ Pour capturer des coordonnées manuellement :
 uv run python tools/coordinate_finder.py
 ```
 
-## Structure des fichiers
+## 📁 Structure du projet
 
 ```
 Territoy_Automation/
-├── main.py                 # Script principal
-├── config.py               # Configuration (chemins, coordonnées)
-├── pyproject.toml          # Configuration projet et dépendances (uv)
-├── requirements.txt        # Dépendances Python (pip fallback)
-├── territory_automation/   # Modules Python
-│   ├── automation.py       # Logique d'automatisation
-│   ├── data_loader.py      # Chargement Excel/CSV
-│   └── logger_setup.py     # Configuration logs
-├── tools/                  # Outils utilitaires
-│   ├── coordinate_finder.py
-│   ├── create_template.py
-│   └── test_connection.py
-├── data/                   # Données
-│   ├── territories.xlsx    # Votre fichier de données
-│   └── pdfs/               # Fichiers PDF des territoires
-└── logs/                   # Fichiers de log
+├── main.py                     # 🚀 Script principal d'automatisation
+├── config.py                   # ⚙️ Configuration (chemins, délais, coordonnées)
+├── pyproject.toml              # 📦 Configuration uv et dépendances
+├── requirements.txt            # 📦 Dépendances Python (fallback pip)
+│
+├── territory_automation/       # 🔧 Modules Python core
+│   ├── __init__.py
+│   ├── automation.py           # Logique d'automatisation NWS (pywinauto + pyautogui)
+│   ├── data_loader.py          # Chargement Excel/CSV + gestion progression
+│   └── logger_setup.py         # Configuration des logs rotatifs
+│
+├── tools/                      # 🛠️ Outils de calibration et tests
+│   ├── calibration.py          # Assistant de calibration guidé (recommandé)
+│   ├── coordinate_finder.py    # Capture manuelle de coordonnées
+│   ├── test_calibration.py     # Test des coordonnées calibrées
+│   ├── test_connection.py      # Test de connexion à NWS
+│   └── create_template.py      # Génération du template Excel
+│
+├── data/                       # 📊 Données d'automatisation
+│   ├── territories.xlsx        # Fichier de données (à créer)
+│   ├── progress.json           # Suivi de progression (auto-généré)
+│   ├── calibration.json        # Coordonnées calibrées (auto-généré)
+│   └── pdfs/                   # 📄 Fichiers PDF des territoires
+│
+├── logs/                       # 📝 Journaux d'exécution
+│   └── automation_*.log        # Logs horodatés de chaque exécution
+│
+└── docs/                       # 📚 Documentation
+    └── GUIDE.md                # Guide détaillé d'installation et utilisation
 ```
 
-## Format des données Excel
+## 📊 Format des données Excel
 
-| Colonne | Description | Obligatoire |
-|---------|-------------|-------------|
-| Numero | Numéro du territoire (ex: SAR-1-01) | Oui |
-| Suffixe | Suffixe (ex: A, B) | Non |
-| Type | "En présentiel", "Courrier", "Téléphone" ou "Entreprise" | Non |
-| Ville | SARTROUVILLE, MAISONS-LAFFITTE, MONTESSON, MESNIL LE ROI, CARRIERE S/ BOIS | Non |
-| Lien_GPS | URL Google Maps | Non |
-| Notes | Notes générales | Non |
-| Ne_Pas_Visiter | Adresses à éviter | Non |
-| Notes_Proclamateur | Notes pour les proclamateurs | Non |
-| PDF_Filename | Nom du fichier PDF (sinon: Numero.pdf) | Non |
+### Colonnes du fichier Excel
 
-> **Note** : La catégorie "SAR" est sélectionnée automatiquement pour tous les territoires.
+| Colonne | Type | Description | Obligatoire | Exemple |
+|---------|------|-------------|-------------|----------|
+| **Numero** | Texte | Numéro unique du territoire | ✅ Oui | `SAR-1-01` |
+| **Suffixe** | Texte | Suffixe du territoire | ❌ Non | `A`, `B` |
+| **Type** | Liste | Type de territoire | ❌ Non | `En présentiel` |
+| **Ville** | Liste | Ville du territoire | ❌ Non | `SARTROUVILLE` |
+| **Lien_GPS** | URL | Lien Google Maps | ❌ Non | `https://maps.google.com/...` |
+| **Notes** | Texte | Notes générales | ❌ Non | `Zone résidentielle` |
+| **Ne_Pas_Visiter** | Texte | Adresses à éviter | ❌ Non | `Apt 3B, 15 rue...` |
+| **Notes_Proclamateur** | Texte | Notes pour proclamateurs | ❌ Non | `Prévoir 2h` |
+| **PDF_Filename** | Texte | Nom du fichier PDF | ❌ Non | `custom.pdf` |
+
+### Valeurs acceptées
+
+**Type** (menu déroulant dans NWS) :
+- `En présentiel` (défaut)
+- `Courrier`
+- `Téléphone`
+- `Entreprise`
+- `Aucun` (ou laisser vide)
+
+**Ville** (liste dans NWS) :
+- `SARTROUVILLE`
+- `MAISONS-LAFFITTE`
+- `MONTESSON`
+- `MESNIL LE ROI`
+- `CARRIERE S/ BOIS`
+
+### Règles de nommage des PDFs
+
+1. **Par défaut** : Le fichier PDF doit avoir le même nom que le numéro du territoire
+   - Exemple : `SAR-1-01.pdf` pour le territoire `SAR-1-01`
+
+2. **Personnalisé** : Si vous utilisez un nom différent, remplissez la colonne `PDF_Filename`
+   - Exemple : `custom_map_01.pdf`
+
+3. **Placement** : Tous les PDFs doivent être dans le dossier `data/pdfs/`
+
+> 💡 **Note importante** : La catégorie "SAR" est sélectionnée automatiquement pour tous les territoires. Modifiez le code si vous utilisez une autre catégorie.
 
 ## Arrêt d'urgence
 

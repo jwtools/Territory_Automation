@@ -1,6 +1,6 @@
 # Guide d'Installation et d'Utilisation
 
-Guide complet pour l'automatisation de New World Scheduler 7.9.
+📖 Guide complet pour l'automatisation de New World Scheduler 7.9.
 
 ## Table des matières
 
@@ -9,7 +9,9 @@ Guide complet pour l'automatisation de New World Scheduler 7.9.
 3. [Calibration des coordonnées](#calibration-des-coordonnées)
 4. [Préparation des données](#préparation-des-données)
 5. [Utilisation](#utilisation)
-6. [Dépannage](#dépannage)
+6. [Architecture technique](#architecture-technique)
+7. [Dépannage](#dépannage)
+8. [FAQ](#faq)
 
 ---
 
@@ -73,31 +75,64 @@ DELAY_APP_LAUNCH = 5.0
 
 ### Pourquoi calibrer ?
 
-Les coordonnées des boutons dépendent de :
-- Votre résolution d'écran
-- La position de la fenêtre NWS
-- L'échelle d'affichage Windows (100%, 125%, 150%)
+Les coordonnées des boutons et champs dépendent de :
+- 🖥️ **Résolution d'écran** (1920x1080, 2560x1440, etc.)
+- 📐 **Position et taille de la fenêtre NWS** (maximisée recommandée)
+- 🔍 **Échelle d'affichage Windows** (100%, 125%, 150%, 175%)
+- 🎨 **Thème et DPI** de l'interface
 
-### Procédure de calibration
+> ⚠️ **Important** : Une calibration précise est essentielle pour le bon fonctionnement de l'automatisation.
 
-1. **Lancez New World Scheduler** et positionnez la fenêtre
+### Méthode 1 : Assistant guidé (recommandé)
 
-2. **Lancez l'outil de capture** :
+L'assistant de calibration vous guide pas à pas pour capturer tous les éléments nécessaires.
+
+#### Procédure complète
+
+1. **Préparez l'environnement** :
    ```bash
-   uv run python tools/coordinate_finder.py
+   # Lancez New World Scheduler
+   # Maximisez la fenêtre (recommandé)
+   # Naviguez vers l'écran des territoires
    ```
 
-3. **Capturez chaque élément** :
-   - Positionnez la souris sur l'élément
-   - Appuyez sur `C` pour capturer
-   - Notez le numéro et les coordonnées
+2. **Lancez l'assistant de calibration** :
+   ```bash
+   uv run python tools/calibration.py
+   ```
 
-4. **Éléments à capturer** (dans l'ordre) :
+3. **Suivez les instructions à l'écran** :
+   - L'assistant affiche le nom et la description de chaque élément
+   - Positionnez votre souris sur l'élément indiqué
+   - Appuyez sur `C` pour capturer les coordonnées
+   - Appuyez sur `S` pour passer (si élément non disponible)
+   - Appuyez sur `Q` pour quitter
 
-   | # | Élément | Description |
-   |---|---------|-------------|
-   | 1 | btn_new_territory | Bouton "+" (nouveau territoire) |
-   | 2 | field_numero | Champ "Numéro de territoire" |
+4. **Éléments calibrés** (23 au total) :
+
+   **Navigation (2 éléments)** :
+   - Menu Territoires
+   - Liste des territoires
+
+   **Création (1 élément)** :
+   - Bouton "+" (nouveau territoire)
+
+   **Formulaire - Menus déroulants (8 éléments)** :
+   - Catégorie (menu + option SAR)
+   - Type (menu + 4 options : En présentiel, Courrier, Téléphone, Entreprise)
+   - Ville (menu + 5 options)
+
+   **Formulaire - Champs de saisie (6 éléments)** :
+   - Numéro
+   - Suffixe
+   - Lien GPS
+   - Notes
+   - Ne pas visiter
+   - Notes proclamateur
+
+   **Actions (2 éléments)** :
+   - Bouton Import PDF
+   - Bouton Sauvegarder
    | 3 | field_suffixe | Champ "Suffixe" |
    | 4 | dropdown_type | Dropdown "Type" |
    | 5 | dropdown_option_presentiel | Option "En présentiel" (après ouverture dropdown) |
@@ -217,6 +252,113 @@ Deux méthodes :
 
 ---
 
+## Architecture technique
+
+### Technologies utilisées
+
+**Automatisation Windows** :
+- `pywinauto` : Contrôle de l'application Windows (gestion des fenêtres, focus)
+- `pyautogui` : Contrôle de la souris et du clavier (clics, saisie)
+- `keyboard` : Détection des touches clavier pour la calibration
+
+**Traitement de données** :
+- `pandas` : Lecture et manipulation des fichiers Excel/CSV
+- `openpyxl` : Création de fichiers Excel (templates)
+- `pyperclip` : Gestion du presse-papiers (copier-coller)
+
+**Gestion de projet** :
+- `uv` : Gestionnaire de paquets et environnements virtuels rapide
+- `pyproject.toml` : Configuration moderne du projet Python
+
+### Flux d'exécution
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Chargement des données                                  │
+│    - Lecture du fichier Excel                               │
+│    - Validation des colonnes obligatoires                   │
+│    - Vérification des fichiers PDF                          │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 2. Connexion à NWS                                          │
+│    - Lancement de l'application (si nécessaire)             │
+│    - Recherche et focus de la fenêtre                       │
+│    - Fermeture des dialogues de démarrage                   │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 3. Navigation vers l'écran des territoires                  │
+│    - Clic sur menu Territoires                              │
+│    - Clic sur Liste des territoires                         │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 4. Pour chaque territoire (boucle)                          │
+│    ┌───────────────────────────────────────────────────┐   │
+│    │ a. Création nouveau territoire (clic sur +)       │   │
+│    └───────────────┬───────────────────────────────────┘   │
+│                    │                                         │
+│    ┌───────────────▼───────────────────────────────────┐   │
+│    │ b. Remplissage du formulaire                      │   │
+│    │    - Catégorie (SAR)                              │   │
+│    │    - Numéro                                       │   │
+│    │    - Suffixe (optionnel)                          │   │
+│    │    - Type (optionnel)                             │   │
+│    │    - Ville (optionnel)                            │   │
+│    │    - Lien GPS (optionnel)                         │   │
+│    │    - Notes (optionnel)                            │   │
+│    │    - Ne pas visiter (optionnel)                   │   │
+│    │    - Notes proclamateur (optionnel)               │   │
+│    └───────────────┬───────────────────────────────────┘   │
+│                    │                                         │
+│    ┌───────────────▼───────────────────────────────────┐   │
+│    │ c. Import du PDF                                  │   │
+│    │    - Clic sur bouton import                       │   │
+│    │    - Sélection du fichier                         │   │
+│    └───────────────┬───────────────────────────────────┘   │
+│                    │                                         │
+│    ┌───────────────▼───────────────────────────────────┐   │
+│    │ d. Sauvegarde                                     │   │
+│    │    - Clic sur bouton Sauvegarder                  │   │
+│    │    - Attente de la sauvegarde                     │   │
+│    └───────────────┬───────────────────────────────────┘   │
+│                    │                                         │
+│    ┌───────────────▼───────────────────────────────────┐   │
+│    │ e. Mise à jour de la progression                  │   │
+│    │    - Sauvegarde dans progress.json                │   │
+│    └───────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Gestion des erreurs
+
+**Stratégies de résilience** :
+- ✅ **Fail-safe** : Arrêt immédiat si souris en coin supérieur gauche
+- ✅ **Retry logic** : Tentatives multiples pour les actions critiques
+- ✅ **Progress tracking** : Sauvegarde après chaque territoire
+- ✅ **Logging détaillé** : Enregistrement de toutes les actions et erreurs
+- ✅ **Validation** : Vérification des données avant exécution
+
+**Types d'erreurs gérées** :
+- Fenêtre NWS introuvable
+- Fichier PDF manquant
+- Coordonnées incorrectes
+- Délai d'attente dépassé
+- Données Excel invalides
+
+### Modes d'exécution
+
+1. **Mode normal** : Exécution complète avec sauvegarde
+2. **Mode dry-run** : Affichage des actions sans exécution
+3. **Mode no-save** : Remplissage sans sauvegarde (validation visuelle)
+4. **Mode verify** : Vérification des données et PDFs uniquement
+
+---
+
 ## Dépannage
 
 ### "Exécutable non trouvé"
@@ -262,11 +404,86 @@ Dans le dossier `logs/`. Chaque exécution crée un fichier avec timestamp :
 logs/automation_20240115_143022.log
 ```
 
+### PDF non importé
+
+- Vérifiez que le fichier existe dans `data/pdfs/`
+- Vérifiez le nom du fichier (sensible à la casse)
+- Vérifiez que c'est bien un PDF valide
+- Utilisez `--verify` pour lister les PDFs manquants
+
+---
+
+## FAQ
+
+### Puis-je utiliser un autre format que Excel ?
+
+Oui, les fichiers CSV sont également supportés. Assurez-vous que les colonnes ont les bons noms.
+
+### Combien de temps prend l'automatisation ?
+
+Environ 20-30 secondes par territoire en moyenne, selon :
+- La complexité des données
+- La taille du PDF
+- La vitesse de votre ordinateur
+- Les délais configurés
+
+### L'automatisation fonctionne-t-elle en arrière-plan ?
+
+Non, la fenêtre NWS doit rester visible et au premier plan. Ne minimisez pas la fenêtre pendant l'exécution.
+
+### Puis-je modifier les coordonnées manuellement ?
+
+Oui, éditez le fichier `data/calibration.json` :
+```json
+{
+  "btn_new_territory": [100, 200],
+  "field_numero": [300, 250]
+}
+```
+
+### Comment changer la catégorie par défaut (SAR) ?
+
+Modifiez le fichier `territory_automation/automation.py`, fonction `fill_territory_form()`, section catégorie.
+
+### L'automatisation supporte-t-elle plusieurs catégories ?
+
+Actuellement non, mais vous pouvez facilement modifier le code pour ajouter une colonne "Catégorie" dans Excel et adapter la logique.
+
+### Puis-je exécuter plusieurs instances en parallèle ?
+
+Non recommandé. Cela causerait des conflits avec le contrôle de la souris et du clavier.
+
+### Comment sauvegarder ma configuration ?
+
+Sauvegardez ces fichiers :
+- `data/calibration.json` (coordonnées)
+- `config.py` (configuration personnalisée)
+- `data/territories.xlsx` (vos données)
+
+### Le projet est-il open source ?
+
+Oui, vous pouvez modifier et adapter le code selon vos besoins. Le code est documenté et modulaire.
+
 ---
 
 ## Support
 
 En cas de problème :
-1. Consultez les logs dans `logs/`
-2. Essayez en mode `--dry-run` pour diagnostiquer
-3. Vérifiez la calibration des coordonnées
+
+1. 📝 **Consultez les logs** dans `logs/` pour identifier l'erreur exacte
+2. 🎭 **Testez en mode dry-run** : `uv run python main.py --dry-run`
+3. 🔍 **Vérifiez les données** : `uv run python main.py --verify`
+4. 🎯 **Recalibrez** si nécessaire : `uv run python tools/calibration.py`
+5. 🔄 **Testez la calibration** : `uv run python tools/test_calibration.py`
+
+### Checklist de dépannage
+
+- [ ] NWS est-il lancé et visible ?
+- [ ] La fenêtre est-elle maximisée ?
+- [ ] Les coordonnées sont-elles calibrées ?
+- [ ] Le fichier Excel est-il valide ?
+- [ ] Les PDFs sont-ils dans `data/pdfs/` ?
+- [ ] Les logs montrent-ils une erreur spécifique ?
+- [ ] Avez-vous testé avec `--dry-run` ?
+
+**Pour aller plus loin** : Consultez le code source dans `territory_automation/` pour comprendre le fonctionnement interne.
