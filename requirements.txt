@@ -1,0 +1,18 @@
+# Territory Automation - Dépendances
+# Installez avec: pip install -r requirements.txt
+
+# Automatisation Windows
+pyautogui>=0.9.54
+pywinauto>=0.6.8
+pyperclip>=1.8.2
+
+# Lecture de données
+pandas>=2.0.0
+openpyxl>=3.1.0  # Pour les fichiers .xlsx
+
+# Utilitaires
+keyboard>=0.13.5  # Pour l'outil de capture de coordonnées
+
+# Optionnel: manipulation de PDF
+# pdfplumber>=0.10.0
+# PyPDF2>=3.0.0

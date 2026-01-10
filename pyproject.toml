@@ -1,0 +1,35 @@
+[project]
+name = "territory-automation"
+version = "1.0.0"
+description = "Automatisation de la saisie de territoires dans New World Scheduler 7.9"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Yann"}
+]
+
+dependencies = [
+    "pyautogui>=0.9.54",
+    "pywinauto>=0.6.8",
+    "pyperclip>=1.8.2",
+    "pandas>=2.0.0",
+    "openpyxl>=3.1.0",
+    "keyboard>=0.13.5",
+]
+
+[project.optional-dependencies]
+pdf = [
+    "pdfplumber>=0.10.0",
+    "PyPDF2>=3.0.0",
+]
+
+[project.scripts]
+territory-automation = "main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = []
