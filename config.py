@@ -23,6 +23,40 @@ def _load_calibration() -> dict:
             pass
     return {}
 
+
+def _load_options() -> dict:
+    """
+    Charge les options de catégories et villes depuis le fichier JSON.
+    Retourne un dict avec les valeurs par défaut si le fichier n'existe pas.
+    """
+    options_file = Path(__file__).parent / "data" / "options.json"
+    default_options = {
+        "categories": {"SAR": "dropdown_option_sar"},
+        "villes": {
+            "AUCUN": "dropdown_ville_aucun",
+            "": "dropdown_ville_aucun",
+            "CARRIERE S/ BOIS": "dropdown_ville_carrieres",
+            "CARRIERES": "dropdown_ville_carrieres",
+            "MAISONS-LAFFITTE": "dropdown_ville_maisons",
+            "MAISONS LAFFITTE": "dropdown_ville_maisons",
+            "MESNIL LE ROI": "dropdown_ville_mesnil",
+            "MONTESSON": "dropdown_ville_montesson",
+            "SARTROUVILLE": "dropdown_ville_sartrouville",
+        }
+    }
+    if options_file.exists():
+        try:
+            with open(options_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                # Fusionner avec les valeurs par défaut
+                return {
+                    "categories": data.get("categories", default_options["categories"]),
+                    "villes": data.get("villes", default_options["villes"]),
+                }
+        except (json.JSONDecodeError, IOError):
+            pass
+    return default_options
+
 # =============================================================================
 # CHEMINS DES FICHIERS
 # =============================================================================
@@ -109,6 +143,11 @@ _DEFAULT_COORDINATES = {
 _calibrated = _load_calibration()
 COORDINATES = {**_DEFAULT_COORDINATES, **_calibrated}
 
+# Charger les options de catégories et villes
+_options = _load_options()
+CATEGORIES = _options["categories"]
+VILLES = _options["villes"]
+
 # Afficher un avertissement si pas de calibration
 if not _calibrated:
     import sys
@@ -152,12 +191,12 @@ STARTUP_DIALOG_WAIT = 2.0
 # =============================================================================
 
 # Mapping entre les colonnes Excel et les champs du formulaire
-# Note: Catégorie est toujours "SAR" (pas de colonne Excel)
 EXCEL_COLUMNS = {
     "numero": "Numero",
     "suffixe": "Suffixe",
+    "categorie": "Categorie",  # Configurable (voir data/options.json)
     "type": "Type",
-    "ville": "Ville",
+    "ville": "Ville",  # Configurable (voir data/options.json)
     "lien_gps": "Lien_GPS",
     "notes": "Notes",
     "ne_pas_visiter": "Ne_Pas_Visiter",

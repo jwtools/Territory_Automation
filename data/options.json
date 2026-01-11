@@ -1,0 +1,22 @@
+{
+  "categories": {
+    "SAR": "dropdown_option_sar"
+  },
+  "villes": {
+    "AUCUN": "dropdown_ville_aucun",
+    "": "dropdown_ville_aucun",
+    "CARRIERE S/ BOIS": "dropdown_ville_carrieres",
+    "CARRIERES": "dropdown_ville_carrieres",
+    "MAISONS-LAFFITTE": "dropdown_ville_maisons",
+    "MAISONS LAFFITTE": "dropdown_ville_maisons",
+    "MESNIL LE ROI": "dropdown_ville_mesnil",
+    "MONTESSON": "dropdown_ville_montesson",
+    "SARTROUVILLE": "dropdown_ville_sartrouville"
+  },
+  "_comment": {
+    "description": "Fichier de configuration des options pour les dropdowns",
+    "categories": "Mapping entre nom de catégorie (Excel) et clé de coordonnée",
+    "villes": "Mapping entre nom de ville (Excel) et clé de coordonnée",
+    "ajout": "Pour ajouter une option: 1) Ajouter le mapping ici, 2) Calibrer la coordonnée avec tools/calibration.py"
+  }
+}

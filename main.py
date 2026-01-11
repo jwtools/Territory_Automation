@@ -26,6 +26,8 @@ from config import (
     NWS_WINDOW_TITLE,
     COORDINATES,
     EXCEL_COLUMNS,
+    CATEGORIES,
+    VILLES,
     DELAY_AFTER_CLICK,
     DELAY_AFTER_TYPE,
     DELAY_APP_LAUNCH,
@@ -320,7 +322,9 @@ def main():
         coordinates=COORDINATES,
         delays=delays,
         pdf_folder=args.pdf_folder,
-        startup_dialog_config=startup_dialog_config
+        startup_dialog_config=startup_dialog_config,
+        categories=CATEGORIES,
+        villes=VILLES
     )
 
     # Lancer l'automatisation

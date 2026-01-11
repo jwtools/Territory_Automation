@@ -47,7 +47,9 @@ class NWSAutomator:
         coordinates: dict,
         delays: dict,
         pdf_folder: Path,
-        startup_dialog_config: Optional[dict] = None
+        startup_dialog_config: Optional[dict] = None,
+        categories: Optional[dict] = None,
+        villes: Optional[dict] = None
     ):
         """
         Initialise l'automatiseur.
@@ -59,6 +61,8 @@ class NWSAutomator:
             delays: Dictionnaire des délais
             pdf_folder: Dossier contenant les PDFs
             startup_dialog_config: Configuration pour gérer les dialogues de démarrage
+            categories: Mapping nom catégorie -> clé de coordonnée (depuis options.json)
+            villes: Mapping nom ville -> clé de coordonnée (depuis options.json)
         """
         self.exe_path = exe_path
         self.window_title = window_title
@@ -68,6 +72,10 @@ class NWSAutomator:
         self.logger = get_logger()
         self.app: Optional[Application] = None
         self.main_window = None
+
+        # Options configurables (catégories et villes)
+        self.categories = categories or {"SAR": "dropdown_option_sar"}
+        self.villes = villes or {}
 
         # Configuration des dialogues de démarrage
         self.startup_config = startup_dialog_config or {
@@ -468,9 +476,18 @@ class NWSAutomator:
             self.create_new_territory()
 
             # Remplir les champs (ordre de saisie)
-            self.logger.info("[ÉTAPE 2] Catégorie → SAR")
-            if "dropdown_categorie" in self.coords and "dropdown_option_sar" in self.coords:
-                self.select_dropdown_option("dropdown_categorie", "dropdown_option_sar")
+            self.logger.info("[ÉTAPE 2] Catégorie")
+            categorie = territory.get("categorie", "").upper().strip()
+            if not categorie:
+                # Valeur par défaut: première catégorie disponible
+                categorie = list(self.categories.keys())[0] if self.categories else "SAR"
+            if categorie and "dropdown_categorie" in self.coords:
+                option_id = self.categories.get(categorie)
+                if option_id and option_id in self.coords:
+                    self.logger.info(f"  → {categorie}")
+                    self.select_dropdown_option("dropdown_categorie", option_id)
+                else:
+                    self.logger.warning(f"  Catégorie inconnue ou non calibrée: {categorie}")
 
             self.logger.info("[ÉTAPE 3] Numéro")
             self.fill_field("field_numero", territory.get("numero", ""))
@@ -509,22 +526,12 @@ class NWSAutomator:
             self.logger.info("[ÉTAPE 6] Ville")
             ville = territory.get("ville", "").upper().strip()
             if ville and "dropdown_ville" in self.coords:
-                ville_options = {
-                    "AUCUN": "dropdown_ville_aucun",
-                    "": "dropdown_ville_aucun",
-                    "CARRIERE S/ BOIS": "dropdown_ville_carrieres",
-                    "CARRIERES": "dropdown_ville_carrieres",
-                    "MAISONS-LAFFITTE": "dropdown_ville_maisons",
-                    "MAISONS LAFFITTE": "dropdown_ville_maisons",
-                    "MESNIL LE ROI": "dropdown_ville_mesnil",
-                    "MONTESSON": "dropdown_ville_montesson",
-                    "SARTROUVILLE": "dropdown_ville_sartrouville",
-                }
-                option_id = ville_options.get(ville)
-                if option_id:
+                option_id = self.villes.get(ville)
+                if option_id and option_id in self.coords:
+                    self.logger.info(f"  → {ville}")
                     self.select_dropdown_option("dropdown_ville", option_id)
                 else:
-                    self.logger.warning(f"  Ville inconnue: {ville}")
+                    self.logger.warning(f"  Ville inconnue ou non calibrée: {ville}")
             else:
                 self.logger.info("  (pas de ville)")
 

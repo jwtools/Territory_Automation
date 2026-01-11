@@ -27,10 +27,11 @@ except ImportError:
 def create_template():
     """Crée le fichier template Excel."""
     # Données d'exemple
-    # Note: Catégorie est toujours "SAR" (sélectionné automatiquement)
+    # Note: Catégorie et Ville sont configurables (voir data/options.json)
     data = {
         "Numero": ["SAR-1-01", "SAR-1-02", "SAR-1-03", "SAR-2-01", "SAR-2-02"],
         "Suffixe": ["A", "B", "", "A", ""],
+        "Categorie": ["SAR", "SAR", "SAR", "SAR", "SAR"],  # Configurable via options.json
         "Type": ["En présentiel", "Courrier", "Téléphone", "Entreprise", "En présentiel"],
         "Ville": ["SARTROUVILLE", "SARTROUVILLE", "MAISONS-LAFFITTE", "MONTESSON", "MESNIL LE ROI"],
         "Lien_GPS": [
@@ -89,13 +90,14 @@ def create_template():
         column_widths = {
             "A": 15,  # Numero
             "B": 10,  # Suffixe
-            "C": 15,  # Type
-            "D": 20,  # Ville
-            "E": 45,  # Lien_GPS
-            "F": 30,  # Notes
-            "G": 30,  # Ne_Pas_Visiter
-            "H": 30,  # Notes_Proclamateur
-            "I": 25,  # PDF_Filename
+            "C": 12,  # Categorie
+            "D": 15,  # Type
+            "E": 20,  # Ville
+            "F": 45,  # Lien_GPS
+            "G": 30,  # Notes
+            "H": 30,  # Ne_Pas_Visiter
+            "I": 30,  # Notes_Proclamateur
+            "J": 25,  # PDF_Filename
         }
 
         for col, width in column_widths.items():
@@ -107,16 +109,21 @@ def create_template():
     print("-" * 60)
     print("  Numero            : Numéro du territoire (ex: SAR-1-01)")
     print("  Suffixe           : Suffixe optionnel (ex: A, B)")
+    print("  Categorie         : Catégorie du territoire (configurable via options.json)")
     print("  Type              : 'En présentiel', 'Courrier', 'Téléphone' ou 'Entreprise'")
-    print("  Ville             : SARTROUVILLE, MAISONS-LAFFITTE, MONTESSON,")
-    print("                      MESNIL LE ROI, CARRIERE S/ BOIS ou Aucun")
+    print("  Ville             : Ville du territoire (configurable via options.json)")
     print("  Lien_GPS          : URL Google Maps (optionnel)")
     print("  Notes             : Notes générales (optionnel)")
     print("  Ne_Pas_Visiter    : Adresses à éviter (optionnel)")
     print("  Notes_Proclamateur: Notes pour les proclamateurs (optionnel)")
     print("  PDF_Filename      : Nom du PDF (optionnel, sinon Numero.pdf)")
     print()
-    print("Note: La catégorie 'SAR' est sélectionnée automatiquement.")
+    print("Configuration des catégories et villes:")
+    print("-" * 60)
+    print("  Les options sont définies dans data/options.json")
+    print("  Pour ajouter une catégorie ou une ville:")
+    print("    1. Ajouter le mapping dans data/options.json")
+    print("    2. Calibrer la coordonnée avec: uv run python tools/calibration.py")
     print()
     print("Nommage des fichiers PDF:")
     print("-" * 60)
