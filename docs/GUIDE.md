@@ -6,12 +6,13 @@
 
 1. [Installation](#installation)
 2. [Configuration](#configuration)
-3. [Calibration des coordonnées](#calibration-des-coordonnées)
-4. [Préparation des données](#préparation-des-données)
-5. [Utilisation](#utilisation)
-6. [Architecture technique](#architecture-technique)
-7. [Dépannage](#dépannage)
-8. [FAQ](#faq)
+3. [Configuration des catégories et villes](#configuration-des-catégories-et-villes)
+4. [Calibration des coordonnées](#calibration-des-coordonnées)
+5. [Préparation des données](#préparation-des-données)
+6. [Utilisation](#utilisation)
+7. [Architecture technique](#architecture-technique)
+8. [Dépannage](#dépannage)
+9. [FAQ](#faq)
 
 ---
 
@@ -68,6 +69,81 @@ NWS_EXE_PATH = r"C:\Program Files\New World Scheduler\NWScheduler.exe"
 DELAY_AFTER_CLICK = 0.3
 DELAY_APP_LAUNCH = 5.0
 ```
+
+---
+
+## Configuration des catégories et villes
+
+Les catégories et villes sont **entièrement configurables** via le fichier `data/options.json`.
+
+### Fichier `data/options.json`
+
+```json
+{
+  "categories": {
+    "SAR": "dropdown_option_sar"
+  },
+  "villes": {
+    "AUCUN": "dropdown_ville_aucun",
+    "SARTROUVILLE": "dropdown_ville_sartrouville",
+    "MAISONS-LAFFITTE": "dropdown_ville_maisons",
+    "MONTESSON": "dropdown_ville_montesson",
+    "MESNIL LE ROI": "dropdown_ville_mesnil",
+    "CARRIERE S/ BOIS": "dropdown_ville_carrieres"
+  }
+}
+```
+
+### Structure du mapping
+
+Chaque entrée associe :
+- **Clé** : Le nom tel qu'il apparaît dans Excel (en majuscules)
+- **Valeur** : L'identifiant de la coordonnée dans `calibration.json`
+
+### Ajouter une nouvelle catégorie
+
+1. **Modifier `data/options.json`** :
+   ```json
+   {
+     "categories": {
+       "SAR": "dropdown_option_sar",
+       "NOUVELLE_CAT": "dropdown_option_nouvelle_cat"
+     }
+   }
+   ```
+
+2. **Calibrer la coordonnée** :
+   ```bash
+   uv run python tools/calibration.py
+   ```
+   Lors de la calibration, positionnez la souris sur l'option dans le dropdown de catégorie.
+
+3. **Utiliser dans Excel** :
+   Remplissez la colonne `Categorie` avec `NOUVELLE_CAT`.
+
+### Ajouter une nouvelle ville
+
+1. **Modifier `data/options.json`** :
+   ```json
+   {
+     "villes": {
+       "NOUVELLE_VILLE": "dropdown_ville_nouvelle"
+     }
+   }
+   ```
+
+2. **Calibrer la coordonnée** :
+   ```bash
+   uv run python tools/calibration.py
+   ```
+
+3. **Utiliser dans Excel** :
+   Remplissez la colonne `Ville` avec `NOUVELLE_VILLE`.
+
+### Comportement par défaut
+
+- Si la colonne `Categorie` est **vide** dans Excel → la première catégorie du fichier est utilisée
+- Si une catégorie/ville **n'est pas reconnue** → un warning est affiché dans les logs
 
 ---
 
@@ -183,7 +259,9 @@ L'assistant de calibration vous guide pas à pas pour capturer tous les élémen
 |---------|------|---------|-------|
 | Numero | Texte | SAR-1-01 | **Obligatoire**. Identifiant unique |
 | Suffixe | Texte | A | Optionnel |
-| Type | Texte | En présentiel | "En présentiel" ou "Aucun" |
+| Categorie | Texte | SAR | Configurable via `options.json` |
+| Type | Texte | En présentiel | "En présentiel", "Courrier", "Téléphone", "Entreprise" |
+| Ville | Texte | SARTROUVILLE | Configurable via `options.json` |
 | Lien_GPS | URL | https://maps.google.com/... | Optionnel |
 | Notes | Texte | Zone résidentielle | Optionnel |
 | Ne_Pas_Visiter | Texte | Apt 3B | Optionnel |
@@ -304,11 +382,11 @@ Deux méthodes :
 │                    │                                         │
 │    ┌───────────────▼───────────────────────────────────┐   │
 │    │ b. Remplissage du formulaire                      │   │
-│    │    - Catégorie (SAR)                              │   │
+│    │    - Catégorie (depuis Excel ou défaut)           │   │
 │    │    - Numéro                                       │   │
 │    │    - Suffixe (optionnel)                          │   │
 │    │    - Type (optionnel)                             │   │
-│    │    - Ville (optionnel)                            │   │
+│    │    - Ville (depuis Excel, configurable)           │   │
 │    │    - Lien GPS (optionnel)                         │   │
 │    │    - Notes (optionnel)                            │   │
 │    │    - Ne pas visiter (optionnel)                   │   │
@@ -441,13 +519,15 @@ Oui, éditez le fichier `data/calibration.json` :
 }
 ```
 
-### Comment changer la catégorie par défaut (SAR) ?
+### Comment changer la catégorie par défaut ?
 
-Modifiez le fichier `territory_automation/automation.py`, fonction `fill_territory_form()`, section catégorie.
+Modifiez le fichier `data/options.json`. La première catégorie listée est utilisée par défaut si la colonne Excel est vide.
 
-### L'automatisation supporte-t-elle plusieurs catégories ?
+### Comment ajouter une nouvelle catégorie ou ville ?
 
-Actuellement non, mais vous pouvez facilement modifier le code pour ajouter une colonne "Catégorie" dans Excel et adapter la logique.
+1. Ajoutez l'entrée dans `data/options.json`
+2. Calibrez la coordonnée correspondante avec `uv run python tools/calibration.py`
+3. Utilisez le nom dans votre fichier Excel (colonne `Categorie` ou `Ville`)
 
 ### Puis-je exécuter plusieurs instances en parallèle ?
 
@@ -457,6 +537,7 @@ Non recommandé. Cela causerait des conflits avec le contrôle de la souris et d
 
 Sauvegardez ces fichiers :
 - `data/calibration.json` (coordonnées)
+- `data/options.json` (catégories et villes)
 - `config.py` (configuration personnalisée)
 - `data/territories.xlsx` (vos données)
 

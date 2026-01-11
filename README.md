@@ -7,9 +7,9 @@
 ### Import et saisie automatisée
 - ✅ Import automatique de territoires depuis un fichier Excel/CSV
 - ✅ Remplissage automatique des formulaires (numéro, suffixe, type, notes, etc.)
-- ✅ Sélection automatique de la catégorie "SAR"
+- ✅ **Catégories configurables** via `data/options.json`
 - ✅ Support de multiples types de territoires (En présentiel, Courrier, Téléphone, Entreprise)
-- ✅ Saisie des villes (SARTROUVILLE, MAISONS-LAFFITTE, MONTESSON, etc.)
+- ✅ **Villes configurables** via `data/options.json`
 - ✅ Import automatique des fichiers PDF associés
 
 ### Gestion intelligente
@@ -171,6 +171,7 @@ Territoy_Automation/
 │
 ├── data/                       # 📊 Données d'automatisation
 │   ├── territories.xlsx        # Fichier de données (à créer)
+│   ├── options.json            # ⚙️ Configuration catégories/villes
 │   ├── progress.json           # Suivi de progression (auto-généré)
 │   ├── calibration.json        # Coordonnées calibrées (auto-généré)
 │   └── pdfs/                   # 📄 Fichiers PDF des territoires
@@ -190,6 +191,7 @@ Territoy_Automation/
 |---------|------|-------------|-------------|----------|
 | **Numero** | Texte | Numéro unique du territoire | ✅ Oui | `SAR-1-01` |
 | **Suffixe** | Texte | Suffixe du territoire | ❌ Non | `A`, `B` |
+| **Categorie** | Liste | Catégorie du territoire | ❌ Non | `SAR` |
 | **Type** | Liste | Type de territoire | ❌ Non | `En présentiel` |
 | **Ville** | Liste | Ville du territoire | ❌ Non | `SARTROUVILLE` |
 | **Lien_GPS** | URL | Lien Google Maps | ❌ Non | `https://maps.google.com/...` |
@@ -207,12 +209,7 @@ Territoy_Automation/
 - `Entreprise`
 - `Aucun` (ou laisser vide)
 
-**Ville** (liste dans NWS) :
-- `SARTROUVILLE`
-- `MAISONS-LAFFITTE`
-- `MONTESSON`
-- `MESNIL LE ROI`
-- `CARRIERE S/ BOIS`
+**Catégorie et Ville** : Configurables via `data/options.json`
 
 ### Règles de nommage des PDFs
 
@@ -224,7 +221,29 @@ Territoy_Automation/
 
 3. **Placement** : Tous les PDFs doivent être dans le dossier `data/pdfs/`
 
-> 💡 **Note importante** : La catégorie "SAR" est sélectionnée automatiquement pour tous les territoires. Modifiez le code si vous utilisez une autre catégorie.
+## ⚙️ Configuration des catégories et villes
+
+Les catégories et villes sont configurables via le fichier `data/options.json` :
+
+```json
+{
+  "categories": {
+    "SAR": "dropdown_option_sar",
+    "AUTRE": "dropdown_option_autre"
+  },
+  "villes": {
+    "SARTROUVILLE": "dropdown_ville_sartrouville",
+    "MAISONS-LAFFITTE": "dropdown_ville_maisons"
+  }
+}
+```
+
+### Ajouter une nouvelle catégorie ou ville
+
+1. Ajouter l'entrée dans `data/options.json`
+2. Calibrer la coordonnée correspondante : `uv run python tools/calibration.py`
+
+> 💡 **Note** : Si la colonne `Categorie` est vide dans Excel, la première catégorie du fichier options.json est utilisée par défaut.
 
 ## Arrêt d'urgence
 
